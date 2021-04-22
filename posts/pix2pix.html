@@ -1,0 +1,120 @@
+---
+layout: post
+---
+
+<style>
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+</style>
+
+<h1>pix2pix [1] - June 19, 2020 </h1>
+
+
+pix2pix [1] set to introduce a common framework for all image-to-image translation problems. 
+
+In this field, designing appropriate loss functions is a difficult problem: using $l_2$ Euclidean distance as loss function during training leads to blurry outputs. This is because Euclidean distance averages over plausible outputs.
+
+Good use-case for adversarial training. This paper explores conditional generative adversarial networks (cGANs) - condition on input image. 
+
+<h2> Related Work </h2>
+
+In this class of image-to-image problems we'd want to use <em> structured loss </em> functions - penalize joint configuration of output. There is a lot of previous work on structured loss functions: cGAN approach is different because they <em> learn loss function </em> . Other works train GANs unconditionally and rely on other terms - such as $l_2$ regression - to condition output on input. 
+
+
+<h2> Method </h2>
+
+<h3> Information Flow </h3>
+In conditional GANs generator learns mapping from observed image $x$ and random noise vector $z$ to output image $y$: 
+
+\begin{equation*}
+    G : \{x, z\} \rightarrow y
+\end{equation*}
+
+Discriminator observes input image $x$, as well as possible output $y$, and decides whether the output image was produced by the generator or not. 
+
+
+<figure>
+<img src="./pix2pix_training.png" class="center" alt="Trainig Conditional GAN">
+<figcaption> <center>pix2pix training</center></figcaption>
+</figure>
+
+
+
+
+<h3> Loss Function </h3>
+
+\begin{equation*}
+    \mathcal{L}_{cGAN} = \mathbb{E}_{x,y} \log{D(x,y)} + \mathbb{E}_{x,z} \log{(1 - D(x, G(x,z))}
+\end{equation*}
+
+cf in unconditional GANs discriminator does not see input image $x$: 
+
+\begin{equation*}
+    \mathcal{L}_{GAN} = \mathbb{E}_{x,y} \log{D(y)} + \mathbb{E}_{x,z} \log{(1 - D(G(x,z))}
+\end{equation*}
+
+Can add an additional loss term for the generator - tasking it to produce images that not only fool the discriminator, but are also close to ground-truth:
+
+\begin{equation*}
+    \mathcal{L}_{l_1} = \mathbb{E}_{x,y,z} || y - G(x,z) ||_1
+\end{equation*}
+
+where they used $l_1$ norm to discourage blurry images and obtain final loss $\mathcal{L} = \mathcal{L}_{l_1} +  \lambda \mathcal{L}_{cGAN} $. $ \mathcal{L}_{l_1}$ terms enforces low-frequency correctness.
+
+
+<h3> Generator Architecture </h3>
+Use U-Net architecture introduced in  unet[2]: encoder-decoder with skip connections across the information bottleneck: <em> concatenate </em> all channels at layer $i$ with those at layer $n-i$ if there are $n$ channels in total. 
+
+<h3> Discriminator Architecture - PatchGAN </h3>
+Discriminator role is to enforce high-frequency correctness and crispness in output image - loss function has $ \mathcal{L}_{l_1}$ term for low frequency correctness - so it suffices to restrict our attention to the structure in local image patches.
+
+
+
+<h3> Optimization and Inference </h3>
+
+
+
+
+<ul>
+  <li>As in original GAN paper, train generator to maximize $\log D(x, G(x, z))$ rather than minimize  $\log (1 - D(x, G(x, z)))$.</li>
+  <li>Divide the objective by 2 while optimizing $D$, which slows down the rate at which $D$ learns relative to $G$.</li>
+  <li>Apply dropout at test time</li>
+  <li>Apply batch normalization using the statistics of the test batch, rather than aggregated statistics of the training batch - instance normalization [3]</li>
+</ul>
+
+
+
+<h3> Stochasticity</h3>
+
+ Without noise $z$ the map from $x$ to $y$ would be deterministic. If $z$ is Gaussian noise input to generator, the network unfortunately learns to ignore it. Here they model the noise using dropout at both train and test time and only observe minor stochasticity in output. 
+
+<h2> Experiments </h2>
+
+Decent results can often be obtained even on small datasets. For evaluation, they ran “real vs. fake”
+perceptual studies on Amazon Mechanical Turk (AMT). They also ran pre-trained semantic classifiers on cityscape data-set: the intuition is that if the generated images
+are realistic, classifiers trained on real images will be able
+to classify the synthesized image correctly as well.
+
+<h3> Ablation Study Loss Terms </h3>
+$l_1$ term alone leads to reasonable but blurry results. The cGAN alone gives much sharper results but introduces visual artifacts on certain applications. $ l_1$ + GAN  is also effective at creating realistic renderings that respect the input label maps.
+
+
+<h3> Discriminator Patch Size </h3>
+<ul>
+  <li>pixel GAN improves coloring but does not create sharper images</li>
+  <li>patches do well </li>
+  <li>full image GAN does worse than patches - hard to train</li>
+</ul>
+
+<h1> References </h1>
+
+[1] Isola, P., Zhu, J.-Y., Zhou, T., and Efros, A. A. Image-to-image translation with conditional adversarial networks
+<br>
+[2] Ronneberger, O., Fischer, P., and Brox, T.  U-net:  Convolutional networks for biomedical imagesegmentation
+<br>
+[3] Ulyanov, D., Vedaldi, A., and Lempitsky, V. S. Instance normalization: The missing ingredient forfast stylization
+

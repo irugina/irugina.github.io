@@ -1,0 +1,209 @@
+---
+layout: post
+---
+
+<style>
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%;
+}
+</style>
+
+<h1>Recasting Gradient-Based Meta-Learning as
+Hierarchical Bayes [1] - July 2, 2020</h1>
+
+<h2>Framework</h2>
+
+<h3>Gradient-Based optimization</h3>
+
+<ul>
+    <li> start from initialization $\theta$</li>
+    <li> on task $\mathcal{T}_j$ with $N$ support data-points $\textbf{x}_{j_n}$ fine-tune to </li>
+    \begin{equation*}
+        \phi_j = \theta - \alpha \nabla_{\theta}\frac{1}{N} \sum_n - \log{p(\textbf{x}_{j_n}|\theta)}
+    \end{equation*}
+    and compute log-likelihood of $m$ query data-points $\textbf{x}_{N + j_m}$
+    \begin{equation*}
+        \sum_m \log {p(  \textbf{x}_{ j_{m+N}} | \phi_j )}
+    \end{equation*}
+    <li> MAML objective is to minimize negative log-likelihood as above for $J$ tasks  $\mathcal{T}_j$ simultaneously: </li>
+    \begin{equation}
+    \label{eq:maml_objective}
+        \mathcal{L} = \frac{1}{J}  \sum_j \left [ \frac{1}{M}\sum_m -\log {p( \textbf{x}_{ j_{m+N}} | \phi_j )} \right ] = \\ \frac{1}{J}  \sum_j \left [ \frac{1}{M}\sum_m -\log {p(  \textbf{x}_{ j_{m+N}} |  \theta - \alpha \nabla_{\theta}\frac{1}{N} \sum_n - \log{p(\textbf{x}_{j_n}|\theta)} )} \right ] 
+    \end{equation}
+</ul>
+
+
+
+
+<figure>
+<img src="./maml_comp_graph.png" class="center" alt="MAML Computation Graph.">
+<figcaption> <center>MAML Computation Graph.</center></figcaption>
+</figure>
+
+
+<h3>Meta-Learning as Hierarchical Bayes inference</h3>
+
+
+
+<!-- <figure>
+<img src="./maml_bayes.png" class="center" alt="MAML as Graphical Model.">
+<figcaption> <center>MAML as Graphical Model. Mutual dependence of the task-specific parameters $\phi_j$ is realized only through their individual dependence on the meta-level parameters $\theta$.</center></figcaption>
+</figure>
+ -->
+\begin{equation}
+\label{eq:meta_hb}
+    p(X | \theta) = \prod_j \left ( \int p(x_{j_1}, x_{j_2}, ..., x_{j_N} | \phi_j ) p(\phi_j | \theta) \text{d} \phi_j\right)
+\end{equation}
+
+
+<h2>Inner Optimization - Early stopping and Regulazation</h2>
+
+Let's bring together the MAML optimization formulation and Hierarchical Bayes formulation of meta-learning. For MAML, the fine-tuning procedure  $\left 
+( \phi_j \leftarrow \theta - \alpha \nabla_{\theta}\frac{1}{N} \sum_n - \log{p(\textbf{x}_{j_n}|\theta)} \;\; \text{for a single gradient step} \right) $ is GD with early stopping.
+
+<br><br>
+<em>
+ Early stopping $\approx$ Regularization $\approx$ Prior
+</em> <br><br>
+
+To understand this, let's look at the case of <strong>Linear Regression Least Squares</strong>. GD update rule is:
+
+\begin{equation*}
+    \phi_k = \phi_{k-1} - \alpha \nabla_{\phi} \left [ || y-X\phi ||_2^2 \right]_{\phi = \phi_{k-1}} = \phi_{k-1} - \alpha X^T (X\phi_{k-1} - y)
+\end{equation*}
+
+[2] shows that $k$ iterations of GD, starting from $\phi_0 = \theta$, leads to exact solution of the following regularized least squares optimization problem:
+
+\begin{equation}
+\label{eq:opt_problem}
+    \min{ || y-X\phi ||_2^2 + ||\theta - \phi||_Q}
+\end{equation}
+, where $||z||_Q = z^T Q^{-1} z$, and Q is SPD matrix that depends
+on the step size $\alpha$ and iteration index k as well as on the covariance structure of $X$.
+
+So $k$ steps of GD solve eq. \ref{eq:opt_problem} for some $Q$ - inner loop solves a regularized version of initial objective. Note that eq. \ref{eq:opt_problem} is also equivalent to the posterior
+maximization problem:
+
+\begin{equation*}
+    p(\phi | X, y, \theta) \propto \mathcal{N} (y; X\phi,  {\bf I_n}) \cdot \mathcal{N} (\phi; \theta, Q)
+\end{equation*}
+so $k$ steps of GD also compute the MAP estimate of $\phi$ given a Gaussian-noised observation model and a Gaussian prior over $\phi$ with parameters $\mu_0 = \theta$ and $\Sigma_0 = Q$.
+
+<em>
+ Therefore, in the case of linear regression with squared error, MAML is exactly empirical Bayes using the MAP estimate as the point estimate of $\phi$.
+
+</em> <br>
+
+<br>
+
+<h3>GD Nonlinear case:</h3>
+
+
+
+<ul>
+  <li>still maximize the marginal likelihood using a point estimate for $\phi$</li>
+  <li>not necessarily the global mode of posterior </li>
+  <li> <em>but</em> mode of an implicit posterior over $\phi$ resulting from </li> 
+    <ul>
+      <li>an empirical loss interpreted as a negative log-likelihood</li>
+      <li>regularization penalties and the early stopping procedure jointly act as priors</li>
+    </ul>
+  </li>
+</ul>
+
+Every iterate of truncated gradient descent is a mode of an implicit posterior. In particular, we are not required to take the gradient descent procedure of fast adaptation that computes $\phi$ to convergence in order to establish a connection between MAML and hierarchical Bayes.
+
+<figure>
+<img src="./algos.png" class="center" alt="MAML algos.">
+<figcaption> <center>MAML optimization with $K$ inner steps formulated as HB.</center></figcaption>
+</figure>
+
+<h3>Prior $p(\phi | \theta) $: </h3> So far we wrote down what the prior is for least squares linear regression and argued that the intuition of MAML performing Empirical Bayes maintains in more general settings. Let's get a better understanding of this  $p(\phi | \theta) $ prior enforced through early stopping in the inner loop of MAML. Consider quadratic approximation of fast-adaptation objective $l(\phi) = - \log p(x_1, ..., x_N | \phi) $ about a minimum $\phi^*$:
+
+\begin{equation*}
+    l(\phi) = l(\phi^*) + \frac{1}{2} ||\phi - \phi^* ||_{H^{-1}}^2
+\end{equation*}
+
+
+
+
+
+
+and look at preconditioned gradient descent update rule:
+
+\begin{equation*}
+    \phi_k = \phi_{k-1} - \mathcal{B} \nabla_{\phi} l(\phi_{k-1})
+\end{equation*}
+
+Using the inverse Hessian for $\mathcal{B}$ recovers Newton’s method. Meta-learning the $\mathcal{B}$ matrix via gradient descent provides a method to incorporate task-general information into the covariance of the fast adaptation prior, $p(\phi | \theta) $. This update rule is the same as minimizing 
+\begin{equation}
+\label{eq:quadratic_loss_approx}
+    ||\phi - \phi^*||^2_{H^{-1}} + ||\phi_0 - \phi||_Q^2
+\end{equation}
+<h2>Improving MAML</h2>
+
+So far we have only looked at point-estimates for $\phi_j$ in order to simplify  Eq. \ref{eq:meta_hb}. Look instead at the Laplace approximation, which assumes the probability distribution for each integrand in  \ref{eq:meta_hb} is quadratic around a mode $\phi_j$:
+
+\begin{equation*}
+    \int p(X_j | \phi_j) p(\phi_j | \theta) \text{d}\phi_j \approx  p(X_j | \phi_j^*) p(\phi_j^* | \theta) \det{\frac{H_j}{2\pi}} ^ {-\frac{1}{2}}
+\end{equation*}
+,where $H_j$ is the Hessian matrix of second derivatives of the negative log posterior. Outer loop optimization objective in Eq. \ref{eq:maml_objective}  becomes:
+
+\begin{equation}
+\label{eq:laplace_maml_objective}
+    -\log{p(X|\theta)} \approx \sum_j \left [ -\log p(X_j | \hat{\phi}_j) - \log p(\hat{\phi}_j | \theta) + \frac{1}{2} \log \det (H_j) \right]
+\end{equation}
+
+The three terms above:
+
+<ul>
+    <li> $ -\log p(X_j | \hat{\phi}_j)$ maximizes data likelihood</li>
+    <li> $-\log p(\hat{\phi}_j | \theta)$ - implicit regularization imposed by early stopping in inner loop </li>
+    <li> $\frac{1}{2} \log \det (H_j)$ - this one is new, can be interpreted as a form of regularization that penalizes model complexity</li>
+</ul>
+
+\begin{equation*}
+    H_j = \nabla^2_{\phi_j}\left[ -\log p(X_j | \phi_j) \right] + \nabla^2_{\phi_j}\left[ -\log p(\phi_j | \theta) \right] 
+\end{equation*}
+
+The optimization objective in Eq. \ref{eq:laplace_maml_objective} is intractable because:
+
+<ul>
+    <li> we don't know $\log p(\phi_j | \theta)$ outside of the quadratic loss approximation in Eq. \ref{eq:quadratic_loss_approx} - which is still intractable because of non-diagonal Gaussian prior.</li>
+    <li> computing the Hessian is intractable for large models.</li>
+    <li> Hessian isn't even guaranteed to be positive definite at all points -  possibly rendering the Laplace approximation undefined.</li>
+</ul>
+
+Further approximations we make to this Laplace approximation framework:
+
+<ul>
+    <li> prior $\log p(\phi_j | \theta)$ is Gaussian with precision $\tau$ - new hyper-parameter.</li>
+    <li> replace Hessian with curvature matrix $H^*$ that approximates the quadratic curvature of a neural network objective function. </li>
+</ul>
+
+
+
+
+<figure>
+<img src="./laplace_maml.png" class="center" alt="Improved MAML procedure.">
+<figcaption> <center>Improved MAML procedure.</center></figcaption>
+</figure>
+
+Solution for curvature matrix $H^*$ and computation of $\log \det (H)$:
+
+<ul>
+    <li> use Fisher information matrix as approximation of curvature </li>
+    <li> Kronecker-factored approximate curvature (K-FAC) - block-diagonal approximation of Fisher information </li>
+    <ul>
+        <li> each block corresponds to a unique layer in the network </li>
+        <li> each block is further approximated as a Kronecker product </li>
+    </ul>
+    <li> These two approximations ensure inverse of Fisher information matrix can be computed efficiently for the natural gradient. They also help us in computing  $\det (H)$. </li>
+</ul>
+
+<h2> References </h2>
+
+[1] Grant, E., Finn, C., Levine, S., Darrell, T., and Griffiths, T. L.   Recasting gradient-based meta-learning as hierarchical bayes.

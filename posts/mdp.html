@@ -1,0 +1,128 @@
+---
+layout: post
+---
+
+<style>
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+</style>
+
+<h1>Markov Decision Process</h1>
+Build up to what an MDP is by going through:
+<center>Markov Process -> Markov Reward Process -> Markov Decision Process</center> 
+<h2>Markov Process</h2>
+Described by tuple $\langle \mathcal{S}, \mathcal{P} \rangle$ of state space and Markov transition matrix.<br>
+Because it is a random process, we can draw sample sequences from a Markov Process.
+<h2>Markov Reward Process</h2>
+Described by tuple $\langle \mathcal{S}, \mathcal{P}, \mathcal{R}, \gamma \rangle$. Add reward function $\mathcal{R}$ and discount factor $\gamma$.
+\begin{equation*}
+    \mathcal{R}_s = \mathbb{E} [R_{t + 1} | S_t = s]
+\end{equation*}
+<b>Return</b> $G_t$ is a random variable defined as:
+\begin{equation*}
+    G_t  = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1} 
+\end{equation*}
+Value function is the expected return:
+\begin{equation*}
+    v(s) = \mathbb{E}[G_t | S_t = s] 
+\end{equation*}
+<h4>Bellman Equation</h4>
+It is a linear equation that characterizes the value function and is derived through a 1-step lookahead argument:
+\begin{equation*}
+    v(s) = \mathcal{R}_s + \gamma  \sum_{s' \in \mathcal{S}} \mathcal{P}_{ss'} \cdot v(s') \iff v = \mathcal{R}  + \gamma \mathcal{P} v
+\end{equation*}
+<h2>Markov Decision Process</h2>
+Described by tuple $\langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma \rangle$. Add actions $\mathcal{A}$.
+Now transition probability and reward function both depend on actions:
+\begin{equation*}
+\mathcal{P}_{ss'}^a = \mathbb{P} [S_{t+1} = s' | S_t = s, A_t = a]
+\end{equation*}
+\begin{equation*}
+    \mathcal{R}_s^a = \mathbb{E} [R_{t + 1} | S_t = s, A_t = a]
+\end{equation*}
+A stochastic policy $\pi$ is a distribution over actions given a state
+\begin{equation*}
+\pi(s|a) = \mathbb{P} [A_t = a | S_t = s]
+\end{equation*}
+<h4>Reduction to MRP</h4>
+For a given policy $\pi$ we can reduce an MDP to a MRP by averaging the transition matrix and reward function over actions:
+\begin{equation*}
+    \mathcal{P}_{ss'}^{\pi} = \sum_{a \in \mathcal{A}} \pi(a|s) \mathcal{P}_{ss'}^a
+\end{equation*}
+\begin{equation*}
+    \mathcal{R}_s^{\pi} = \sum_{a \in \mathcal{A}} \pi(a|s) \mathcal{R}_{s}^a
+\end{equation*}
+<h4>Value Functions and Bellman Expectation Equations</h4>
+Can define value function as we did for MRP:
+\begin{equation*}
+    v_{\pi}(s) = \mathbb{E}[G_t | S_t = s]
+\end{equation*}
+and also introduce state-action value function $q_{\pi}$:
+\begin{equation*}
+    q_{\pi}(s) = \mathbb{E}[G_t | S_t = s, A_t = a]
+\end{equation*}
+
+<ul>
+<li>$v$ tell us how good being in state $s$ is for future returns</li>
+<li> $q$ tells us how good taking an action $a$ in state $s$ is for future return</li>
+</ul>
+One step look-ahead connects $v$ and $q$ as follows:
+\begin{equation*}
+v_{\pi}(s) = \sum_{a \in \mathcal{A}} \pi(a|s) q_{\pi} (s,a)
+\end{equation*}
+\begin{equation*}
+q_{\pi} (s,a) = \mathcal{R}_s^a + \gamma \sum_{s' \in \mathcal{S}} \mathcal{P}_{ss'}^a v_{\pi}(s') 
+\end{equation*}
+Two step look-ahead leads to Bellman Equations:
+\begin{equation*}
+v_{\pi}(s) =  \sum_{a \in \mathcal{A}} \pi(a|s) \left(  \mathcal{R}_s^a + \gamma \sum_{s' \in \mathcal{S}} \mathcal{P}_{ss'}^a v_{\pi}(s') \right)
+\end{equation*}
+\begin{equation*}
+q_{\pi} (s,a) = \mathcal{R}_s^a + \gamma \sum_{s' \in \mathcal{S}}  \mathcal{P}_{ss'}^a \sum_{a' \in \mathcal{A}} \pi(a'|s') q_{\pi} (s',a')
+\end{equation*}
+Concise formulation using the induced MRP:
+\begin{equation*}
+v_{\pi} = \mathcal{R}_s^{\pi} + \gamma \mathcal{P}_{ss'}^{\pi} v_{\pi}
+\end{equation*}
+<h4>Optimal Value Function</h4>
+Optimal state-value function $v_{*}(s)$:
+\begin{equation*}
+v_{*}(s) = \max_{\pi} v_{\pi}(s)
+\end{equation*}
+Optimal action-value function $q_{*}(s, a)$:
+\begin{equation*}
+q_{*}(s, a) = \max_{\pi} q_{\pi}(s, a)
+\end{equation*}
+<h4>Optimal Policy</h4>
+Define a partial ordering over policies $\pi \geq \pi' \text{ if } v_{\pi}(s) \geq v_{\pi'}(s), \forall s$.
+<br>
+Theorem: For any MDP there exists one optimal policy $\pi_{*}$. All optimal policies achieve the same optimal value function and optimal action-value function. 
+<br>
+An optimal policy can be found by maximising over $q_{*}(s, a)$. There is always a deterministic optimal policy for any MDP.
+<h4>Bellman Optimality Condition</h4>
+One-step look-ahead for value function (note that instead of averaging like before, here we take the max):
+\begin{equation*}
+v_{*}(s) = \max_{a}q_{*}(s,a)
+\end{equation*}
+For the action-value equation we still need to average because we can't take the max over stochastic process:
+\begin{equation*}
+q_{*} (s,a) = \mathcal{R}_s^a + \gamma \sum_{s' \in \mathcal{S}} \mathcal{P}_{ss'}^a v_{*}(s')
+\end{equation*}
+Combine these to look at two-step lookahead and obtain Bellman Optimality Conditions:
+\begin{equation*}
+v_{*}(s) = \max_{a} \mathcal{R}_s^a + \gamma \sum_{s' \in \mathcal{S}} \mathcal{P}_{ss'}^a v_{*}(s')
+\end{equation*}
+\begin{equation*}
+q_{*} (s,a) = \mathcal{R}_s^a + \gamma \sum_{s' \in \mathcal{S}} \mathcal{P}_{ss'}^a \max_{a'}q_{*}(s',a')
+\end{equation*}
+Solving these non-linear recursive equations:
+<ul>
+<li>value iteration</li>
+<li>policy iteration</li>
+<li>q-learning</li>
+<li>sarsa</li>
+</ul>
