@@ -10,7 +10,7 @@ Physics :arrow_forward: CS :arrow_forward: ML
 
 Data-Informed Global Sparseness in Attention Mechanisms for Deep Neural Networks
 * [Preprint](https://arxiv.org/pdf/2012.02030.pdf)
-* [Slides](./attachments/attention-pruning.pdf)
+* [Slides](https://drive.google.com/file/d/17jPcmMGeE2duneQfq2ovvcKeQ2FY9Y0U/view?usp=sharing)
 
 # Class Projects
 
