@@ -51,6 +51,7 @@ These notes contain direct excerpt from relevant papers/ lecture notes/ videos.
 * [MDP](./posts/mdp.html)
 * [Energy based models](./posts/energy_based_models.html)
 * [Vector and Matrix norms](./posts/norms.html)
+* [Non-Equilibrium stat mech](./posts/non-eq-stat-mech.html)
 
 ### Handwritten
 
