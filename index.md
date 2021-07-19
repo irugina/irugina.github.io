@@ -53,6 +53,7 @@ These notes contain direct excerpt from relevant papers/ lecture notes/ videos.
 * [Vector and Matrix norms](./posts/norms.html)
 * [Non-Equilibrium stat mech](./posts/non-eq-stat-mech.html)
 * [Stat-mech Inspired Methods](./posts/stat-mech-for-ml.html)
+* [VAE](./posts/vae.html)
 
 ### Handwritten
 
