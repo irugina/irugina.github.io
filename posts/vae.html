@@ -197,7 +197,7 @@ A slight manipulation of ELBO gives another interesting interpretation of our ob
 \begin{equation*}
 \text{ELBO}(x) = \mathbb{E}_{q_{\phi}(z|x)} \log p_{\theta} (x | z) -  \mathbb{E}_{q_{\phi}(z|x)} \left [ \log q_{\phi}(z|x) - \log p_{\theta} (z) \right]
 \end{equation*}
-The first term is reconstruction error and the second term is KL divergence between posterior $q_{\phi}(z|x)$ and normal prior $p_{\theta} (z) = \mathcal{N}(0,1)$. The KL divergence is a regularizer or penalty term that keeps variance of $z$  close to 1. Without it, the reconstruction error wants to push $z$'s from different $x$'s far away in latent space. [2]
+The first term is reconstruction error and the second term is KL divergence between posterior $q_{\phi}(z|x)$ and normal prior $p_{\theta} (z) = \mathcal{N}(0,1)$. The KL divergence is a regularizer or penalty term that keeps variance of $z$  close to 1. Without it, the reconstruction error wants to push $z$'s from different $x$'s far away in latent space [2]. This interpretation also makes comparing AEs and VAEs most straightforward [3].
 <h6>KL divergence</h6>
 It's well known maximum likelihood training training minimizes KL between empirical data distribution $q(x)$ and the one learnt by generative model $p_{\theta} (x)$:
 \begin{equation*}
@@ -212,6 +212,8 @@ $\text{ELBO}(\mathcal{D})$ for whole dataset is a lower bound to this, but is it
 \text{ELBO}(\mathcal{D}) & = \mathbb{E}_{q(x)}  \mathbb{E}_{q_{\phi}(z|x)} \left [\log p_{\theta} (x, z) - \log q_{\phi}(z|x) \right] \\ & = -  \mathbb{E}_{q_{\phi}(x,z)}   \left [\log q_{\phi}(x,z) - \log p_{\theta} (x, z) \right] + \mathbb{E}_{q(x)} \log q(x) \\ & = - \text{D}_{\text{KL}} (q_{\phi}(x,z) | p_{\theta} (x, z) ) - \mathcal{H} (q(x))
 \end{split}
 \end{equation*}
+This shows ELBO can be viewed as a maximum likelihood objective in an augmented space.
 <h2>References</h2>
 [1]An Introduction to Variational Autoencoders: Diederik P. Kingma, Max Welling <br>
 [2] https://atcold.github.io/pytorch-Deep-Learning/en/week08/08-3/
+[3] https://stats.stackexchange.com/questions/347378/variational-autoencoder-why-reconstruction-term-is-same-to-square-loss
