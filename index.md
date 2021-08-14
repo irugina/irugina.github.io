@@ -34,30 +34,11 @@ Physics-Inspired Phase-Coded Bayesian Neural Networks
 
 # Notes
 
-These notes contain direct excerpt from relevant papers/ lecture notes/ videos.
-
-### Papers
-
-* [Recasting Gradient-Based Meta-Learning as Hierarchical Bayes](./posts/bayesian_maml.html)
-* [Meta-Learning with Warped Gradient Descent](./posts/warped.html)
-* [Matching/Prototypical/Relation Networks](./posts/meta_learn_embeddings.html)
-* [Multiplicative interactions and where to find them](./posts/multiplicative_weights.html)
-* [Image-to-image translation with conditional adversarial networks](./posts/pix2pix.html) 
-* [Not All Samples Are Created Equal: Deep Learning with Importance Sampling ](./posts/imp_sampling.html) 
-* [Hypernetworks](./posts/hypernetworks.html)
-
-### Other
-
-* [MDP](./posts/mdp.html)
-* [Energy based models](./posts/energy_based_models.html)
 * [Vector and Matrix norms](./posts/norms.html)
+* [Hopfield networks](./posts/hopfield.html)
 * [Non-Equilibrium stat mech](./posts/non-eq-stat-mech.html)
 * [Stat-mech Inspired Methods](./posts/stat-mech-for-ml.html)
 * [VAE](./posts/vae.html)
-
-### Handwritten
-
-* [NTK](./notes/NTK.pdf)
 
 
 
