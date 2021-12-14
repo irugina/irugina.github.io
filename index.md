@@ -20,6 +20,6 @@ Physics :arrow_forward: CS :arrow_forward: ML
 * [Non-Equilibrium stat mech](./posts/non-eq-stat-mech.html)
 * [Stat-mech Inspired Methods](./posts/stat-mech-for-ml.html)
 * [VAE](./posts/vae.html)
-
+* [Median of Means](./posts/median-of-means.html)
 
 
