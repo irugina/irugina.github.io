@@ -55,7 +55,7 @@ Sum this quantity over all nodes to obtain
 D(y_1, y_2, ..., y_N) = \sum_i y_i \sum_{j \neq i} w_{ji}y_j + b_i \\ = \sum_{i, j \neq i}  w_{ij}y_i y_j + \sum_i  b_i  y_i 
 \end{equation*}
 
-Every flip of a neuron in an increase of global quantity $D$. 
+Every flip of a neuron results in an increase of global quantity $D$. 
 
 <br><br>
 
@@ -66,7 +66,7 @@ E = -D(y_1, y_2, ..., y_N) = - \sum_{i, j \neq i}  w_{ij}y_i y_j - \sum_i  b_i  
 \end{equation*}
 
 
-Typically will not utilize bias: is similar to having a single extra neuron that is pegged to 1. Work with $E = -\frac{1}{2}y^TWy$.
+Typically will not utilize bias: it is similar to having a single extra neuron that is pegged to 1. Work with $E = -\frac{1}{2}y^TWy$.
 
 <h2>Content-addressable memory</h2>
 
