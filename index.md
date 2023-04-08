@@ -26,4 +26,4 @@ These notes contain direct excerpt from relevant papers/ lecture notes/ videos.
 * [VAE](./posts/vae.html)
 * [Median of Means](./posts/median-of-means.html)
 * [Diffusion Models](./attachments/Diffusion_Models.pdf)
-
+* [GPU Puzzles](./posts/gpu_puzzles.html)
